@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "budo ./src/index.js --dir ./assets/ --ssl --open --live --port 8000 --"
+    "dev": "budo ./src/index.js --dir ./static/ --ssl --open --live --port 8000 --"
   },
   "dependencies": {
     "budo": "^11.6.4",

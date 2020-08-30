@@ -5,7 +5,6 @@ const p5 = require('p5')
 const init = () => {
 
   const hydra = new Hydra()
-  console.log(hydra)
 
   const sketch = ( p ) => {
 
@@ -13,8 +12,8 @@ const init = () => {
     let textureImg;
 
     p.preload = () => {
-      seedModel = p.loadModel('/choclo.obj', true)
-      textureImg = p.loadImage('/choclo.png')
+      seedModel = p.loadModel('/assets/choclo.obj', true)
+      textureImg = p.loadImage('/assets/choclo.png')
     }
 
     p.setup = () => { 
@@ -25,6 +24,9 @@ const init = () => {
       p.canvas.style.left = "0px"
       //hide p5 canvas behind hydra canvas
       p.canvas.style.zIndex = -10
+
+      // load canvas on s0 once loaded
+      s0.init({src: p.canvas})
 
     }
     p.draw = () => {
@@ -44,7 +46,6 @@ const init = () => {
 
   const p = new p5(sketch,'hydra-ui')
 
-  s0.init({src: p.canvas})
 
   src(s0)
     .scale(1.5)
