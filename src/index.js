@@ -56,4 +56,5 @@ const init = () => {
 }
 
 window.onload = init
+window.document.body.style = `margin:0;width:100%;height:100%`
 
