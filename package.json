@@ -1,10 +1,14 @@
 {
   "scripts": {
-    "dev": "budo ./src/index.js --dir ./static/ --open --live --port 8000 --"
+    "dev": "budo ./src/index.js --dir ./static/ --open --ssl --live --port 8000 -- -t [ babelify --presets [ @babel/env ] --extensions .js ]"
   },
   "dependencies": {
+    "@babel/core": "^7.11.4",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-es2015": "^7.0.0-beta.53",
+    "babelify": "^10.0.0",
     "budo": "^11.6.4",
     "hydra-synth": "^1.3.0",
-    "p5": "^1.1.9"
+    "p5": "0.9.0"
   }
 }

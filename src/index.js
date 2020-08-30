@@ -1,6 +1,6 @@
-const Hydra = require( 'hydra-synth')
-const loop = require( 'raf-loop')
-const p5 = require('p5')
+import Hydra from 'hydra-synth'
+import p5 from 'p5'
+import "p5/lib/addons/p5.sound"
  
 class Kernel {
   constructor(p,model,texture) {
@@ -31,18 +31,20 @@ const init = () => {
   const hydra = new Hydra()
 
   const sketch = ( p ) => {
-
     let seedModel;
-    let textureImg;
+    let textureImg
+    let bells
     let k1,k2,k3;
 
     p.preload = () => {
       seedModel = p.loadModel('/assets/choclo.obj', true)
       textureImg = p.loadImage('/assets/choclo.png')
+      bells = p.loadSound('/audio/bells.mp3')
     }
 
     p.setup = () => { 
       p.createCanvas(hydra.width,hydra.height, p.WEBGL) 
+      bells.play()
 
       k1 = new Kernel(p,seedModel,textureImg)
       k2 = new Kernel(p,seedModel,textureImg)
