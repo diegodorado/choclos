@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "dev": "budo ./src/index.js --dir ./assets/ --ssl --open --live --port 8000 --"
+  },
+  "dependencies": {
+    "budo": "^11.6.4",
+    "hydra-synth": "^1.3.0",
+    "p5": "^1.1.9"
+  }
+}
