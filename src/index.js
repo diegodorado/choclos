@@ -17,13 +17,13 @@ class Kernel {
     this.velocity = p.createVector(p.random(-1,1),p.random(-1,1),p.random(-1,1));
     this.position = p.createVector(p.random(-100,100),p.random(-100,100),p.random(-100,100));
     this.r = 10
-    this.maxspeed = 4
-    this.maxforce = 0.1
+    this.maxspeed = 3
+    this.maxforce = 0.01
 
   }
 
   separate() {
-    var desiredseparation = 50
+    var desiredseparation = 80
     var steer = p.createVector(0,0,0);
     var count = 0;
     // For every boid in the system, check if it's too close
@@ -106,7 +106,7 @@ class Kernel {
     var sep = this.separate();   // Separation
     var ali = this.align();      // Alignment
     var coh = this.cohesion();   // Cohesion
-    sep.mult(1)
+    sep.mult(5)
     ali.mult(1)
     coh.mult(1)
 
@@ -230,9 +230,9 @@ const init = () => {
   p = new p5(sketch,'hydra-ui')
 
   src(s0)
-    //.scale(1.5)
-    //.mult(osc(5, 0.2, 2),0.5)
-    //.hue(0.04)
+    .scale(1.5)
+    .mult(osc(5, 0.2, 2),0.5)
+    .hue(0.04)
     .out()
 
 }
