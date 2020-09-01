@@ -239,7 +239,3 @@ const init = () => {
 
 window.onload = init
 
-// get rid of white margins and stuff
-window.document.body.style = `overflow:hidden;margin:0;width:100%;height:100%`
-window.document.documentElement.style = `overflow:hidden;margin:0;width:100%;height:100%`
-

@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "budo ./src/index.js --dir ./static/ --open --ssl --live --port 8000 -- -t [ babelify --presets [ @babel/env ] --extensions .js ]"
+    "dev": "budo ./src/index.js:assets/app.js --dir ./static/ --open --ssl --live --host 127.0.0.1 --port 8000 -- -t [ babelify --presets [ @babel/env ] --extensions .js ]"
   },
   "dependencies": {
     "@babel/core": "^7.11.4",
