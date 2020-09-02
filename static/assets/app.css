@@ -12,20 +12,21 @@ body,html{
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(255,0,0,0.5);
 }
 
 #emojis .item{
   position: absolute;
-  bottom: 100%;
+  bottom: 120%;
   padding: 20px;
   font-size: 2em;
   animation-name: flyUp;
-  animation-duration: 4s;
-  animation-delay: 4s;
+  animation-duration: 3s;
+  animation-timing-function:ease-in;
+  color: white;
+  font-family: monospace;
 }
 
 @keyframes flyUp {
   0%   {bottom:0}
-  100% {bottom:100%}
+  100% {bottom:120%}
 }

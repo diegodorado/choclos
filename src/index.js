@@ -6,13 +6,25 @@ import "p5/lib/addons/p5.sound"
 let p = null
 
 const hydra = new Hydra()
+const emojis = document.getElementById('emojis')
 
 const kernels = []
- 
+
+const csvStringToArray = strData =>
+{
+    const objPattern = new RegExp(("(\\,|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|([^\\,\\r\\n]*))"),"gi");
+    let arrMatches = null, arrData = [[]];
+    while (arrMatches = objPattern.exec(strData)){
+        if (arrMatches[1].length && arrMatches[1] !== ",")arrData.push([]);
+        arrData[arrData.length - 1].push(arrMatches[2] ?
+            arrMatches[2].replace(new RegExp( "\"\"", "g" ), "\"") :
+            arrMatches[3]);
+    }
+    return arrData;
+}
+
 class Kernel {
-  constructor(model,texture) {
-    this.model =  model
-    this.texture = texture
+  constructor() {
     this.acceleration = p.createVector(0,0,0);
     this.velocity = p.createVector(p.random(-1,1),p.random(-1,1),p.random(-1,1));
     this.position = p.createVector(p.random(-100,100),p.random(-100,100),p.random(-100,100));
@@ -103,82 +115,91 @@ class Kernel {
   }
 
   update() {
-    var sep = this.separate();   // Separation
-    var ali = this.align();      // Alignment
-    var coh = this.cohesion();   // Cohesion
-    sep.mult(5)
+    var sep = this.separate()
+    var ali = this.align()
+    var coh = this.cohesion()
+    var ins = this.inside()
+    sep.mult(10)
     ali.mult(1)
     coh.mult(1)
+    ins.mult(10)
 
-    // Reset accelertion to 0 each cycle
     this.acceleration.mult(0);
-    // Add the force vectors to acceleration
     this.acceleration.add(sep);
     this.acceleration.add(ali);
     this.acceleration.add(coh);
+    this.acceleration.add(ins);
 
     // Update velocity
     this.velocity.add(this.acceleration);
-    // Limit speed
     this.velocity.limit(this.maxspeed);
     this.position.add(this.velocity);
-    this.constrain()
 
   }
 
-  constrain() {
-    if (this.position.x < -p.width/2)  this.position.x = p.width/2
-    if (this.position.y < -p.height/2) this.position.y = p.height/2
-    if (this.position.x > p.width/2)   this.position.x = -p.width/2
-    if (this.position.y > p.height/2)  this.position.y = -p.height/2
-    if (this.position.z > 400) this.position.z = -800
-    if (this.position.z < -800) this.position.z = 400
+  inside() {
+    var maxX = 300 
+    var maxY = 300 
+    var maxZ = 300
+    var steer = p.createVector(0,0,0);
+    if (this.position.x < -maxX)  steer.x = 1
+    if (this.position.x >  maxX)  steer.x = -1
+    if (this.position.y < -maxY)  steer.y = 1
+    if (this.position.y >  maxY)  steer.y = -1
+    if (this.position.z < -maxZ)  steer.z = 1
+    if (this.position.z >  maxZ)  steer.z = -1
+    return steer;
   }
 
-  render() {
+  render(model) {
     p.push()
     p.translate(this.position)
-
     p.rotateX(p.acos(this.velocity.y/this.velocity.mag()));
     p.rotateZ(p.atan2(-this.velocity.x,this.velocity.z));
-
-    p.push()
     p.scale(0.25)
-    p.texture(this.texture)
-    p.model(this.model)
+    p.model(model)
     p.pop()
-
-    p.fill(127);
-    p.stroke(200);
-    //p.cone(this.r*3, this.r*5);
-
-    p.pop()
-
-
   }
 }
 
+let data = null
+
 const sketch = ( p ) => {
-  let seedModel = null
-  let textureImg = null
-  let bells
+  let kernelModel = null
+  let kernelTexture = null
+  let shader = null
+  let shaderTexture = null
 
   const createKernel = () => {
-    if(seedModel===null)
+    if( kernelModel === null || data === null)
       return
 
-    const k = new Kernel(seedModel,textureImg)
+    const k = new Kernel(kernelModel,kernelTexture)
     kernels.push(k)
+    const idx = Math.floor(Math.random()*data.length)
+    const item = data[idx]
+
+    const pan = Math.random()*2 - 1
+    const rate =  Math.random()*0.3+0.8
+    item.audio.pan(pan)
+    item.audio.rate(rate)
+    item.audio.play()
+    const msg = document.createElement('div')
+    msg.className = 'item'
+    msg.textContent = '🍷🥃🍸🤤😵🤮'+'  '+item.phrase
+    emojis.appendChild(msg)
+    setTimeout(()=> msg.remove(), 3000)
   }
 
   p.preload = () => {
-    seedModel = p.loadModel('/assets/choclo.obj', true)
-    textureImg = p.loadImage('/assets/choclo.png')
-    bells = p.loadSound('/audio/bells.mp3')
+    kernelModel = p.loadModel('/assets/choclo.obj', true)
+    kernelTexture = p.loadImage('/assets/choclo.png')
+    shader = p.loadShader('/assets/shader.vert','/assets/shader.frag')
   }
 
   p.setup = () => { 
     p.createCanvas(hydra.width,hydra.height, p.WEBGL) 
+    shaderTexture = p.createGraphics(hydra.width,hydra.height, p.WEBGL) 
 
     p.canvas.style.position = "absolute"
     p.canvas.style.top = "0px"
@@ -193,11 +214,19 @@ const sketch = ( p ) => {
   }
 
   let lastCreatedAt = 0
+  const createInterval = 5
+  const maxKernels = 100
 
   p.draw = () => {
     let t = p.millis()/1000
+    shaderTexture.shader(shader);
 
-    if(t-lastCreatedAt> 0.5 && kernels.length < 100){
+    shader.setUniform('resolution',[p.width,p.height]);
+    shader.setUniform('time',t)
+    shaderTexture.rect(0,0,p.width,p.height)
+
+
+    if(t-lastCreatedAt> createInterval && kernels.length < maxKernels){
       createKernel()
       lastCreatedAt = t
     }
@@ -216,9 +245,11 @@ const sketch = ( p ) => {
 
     // iterate through kernels, move them and display them
     p.normalMaterial();
+    //p.texture(kernelTexture)
+    p.texture(shaderTexture)
     kernels.forEach( k => {
       k.update()
-      k.render()
+      k.render(kernelModel)
     })
 
   }
@@ -229,10 +260,23 @@ const init = () => {
 
   p = new p5(sketch,'hydra-ui')
 
+  fetch('ofenses.csv')
+    .then(resp => resp.text())
+    .then(text => {
+      data = csvStringToArray(text)
+        .map( (v,i) => {
+          const phrase = v[0]
+          const country = v[1]
+          const path = '/audio/Def_INT-'+(''+(i+1)).padStart(3,'0')+'.mp3'
+          const audio = p.loadSound(path)
+          return {phrase,country,audio}
+        })
+    })
+
+
   src(s0)
-    .scale(1.5)
-    .mult(osc(5, 0.2, 2),0.5)
-    .hue(0.04)
+    //.mult(osc(5, 0.2, 2),0.5)
+    //.hue(0.04)
     .out()
 
 }
