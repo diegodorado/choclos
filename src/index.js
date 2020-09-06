@@ -1,11 +1,9 @@
-import Hydra from 'hydra-synth'
 import p5 from 'p5'
 import "p5/lib/addons/p5.sound"
 import Spline from 'cubic-spline'
 import {kernels, createKernel} from './kernels'
+import hydra from './hydra'
 
-
-// here I will hold a global reference to p5
 
 // timeline ref points as [time,kernlesCount] pairs
 // other values will be interpolated from defined ones
@@ -151,7 +149,6 @@ const sketch = ( p ) => {
 
 // INIT ALL
 
-const hydra = new Hydra()
 const emojis = document.getElementById('emojis')
 const p = new p5(sketch,'hydra-ui')
 let data = null
@@ -168,10 +165,5 @@ fetch('ofenses.csv')
         return {phrase,country,audio}
       })
   })
-
-
-// hydra sketch
-src(s0)
-  .out()
 
 
