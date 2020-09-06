@@ -90,8 +90,6 @@ const sketch = ( p ) => {
     createKernel()
     const off = audios[2]
     const sound = off.sounds[off.soundIdx]
-    off.soundIdx++
-    off.soundIdx %= off.sounds.length
 
     const pan = 0.2 * (Math.random() - 0.5)
     const rate =  0.8 + Math.random()*0.2
@@ -102,9 +100,20 @@ const sketch = ( p ) => {
 
     const msg = document.createElement('div')
     msg.className = 'item'
-    msg.textContent = '🍷🥃🍸🤤😵🤮'
+    msg.style = `transform:translateX(${Math.round(Math.random()*90)}vw)`
+    const wmsg = document.createElement('div')
+    wmsg.className = 'wrapper'
+    emojiMsgs[off.soundIdx % emojiMsgs.length].split(',').forEach( e => {
+      const span = document.createElement('span')
+      span.textContent = e
+      wmsg.appendChild(span)
+    })
+    msg.appendChild(wmsg)
     emojis.appendChild(msg)
-    setTimeout(()=> msg.remove(), 3000)
+    //setTimeout(()=> msg.remove(), 3000)
+
+    off.soundIdx++
+    off.soundIdx %= off.sounds.length
   }
 
   p.setup = () => { 
@@ -180,4 +189,29 @@ const audios = [
   a.soundIdx = 0
   return a
 })
+
+
+const emojiMsgs = [
+  '🌡,🔥,🌋,🤒,🤬,⬆︎',
+  '💦,😤,😡,🏊‍♂️,‼️, ,⬆︎',
+  '🌡,🔥,🌋,🤒,🤬,⬆︎',
+  '💨,😲,🚬,😄,🌿,🌳,🌱,⬆︎',
+  '🌫️,🏭,🍋,🌧,🍂,🥀,🍁,⬆︎',
+  '🛢,☠️,🍂,🥀,🤮,🔥,⬆︎',
+  '⛽️,🗯,💥,👩🏾‍🚒,🥀,⬆︎',
+  '👩🏻‍🔬,⛽️,🗯,💥,👨‍🚒,🍂,⬆︎',
+  '💩,🐂,💨,🐄,💨,🐃,💨,🤢,💩,⬆︎',
+  '⚛️,💨,🌿,🌱,🌲,🌳,😎,🥕,🥝,⬆︎',
+  '🍷,🥃,🍸,🤤,😵,🤮,☘️,⬆︎',
+  '💩,💩,💩,💩,⬆︎,❗️,❗️,💦,💦,☠️,🐟,☠️,🐡,🌲,🌴,☘️',
+  '💩,💩,☠️,🐟,☠️,🐬,🌊,⬆︎,⬆︎,🌲,🌴,☘️',
+  '👨‍🔬,👩🏻‍🔬,⚒,🔨,⛏,🚰,🚿',
+  '💎,🚰,🔨,🔨,🔨,🔨',
+  '🍋,☠️,🐟,🥀,😖,♨️,👨‍🔬,⬆︎',
+  '👨‍🔬,⚗️,⬆︎,🏊‍♂️,🏊‍♂️,☠️,🐟',
+  '👨‍🔬,⬆︎,☿,💩,🚽,🏆,🚿,☠️,☠️',
+  '⬆︎,☠️,👻,🏆,🚿,🧀',
+  '👨‍🔬,⬆︎,🥜,🍕,🍗,☔️,💀,🤮',
+  '👨‍🔬,⬆︎,🦐,📣,🔔,😡,☠️',
+]
 
