@@ -40,6 +40,15 @@ const csvStringToArray = strData =>
     return arrData;
 }
 
+const shuffle = (a) => {
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+
 const drawTimeline = (p,t) => {
 
   if(!debugTimeline)
@@ -73,22 +82,27 @@ const drawTimeline = (p,t) => {
 const sketch = ( p ) => {
 
   const addKernel = () => {
-    if( data === null)
+
+    // abort if audio files are still loading
+    if(audios.some(a => a.loadLeft > 0))
       return
 
     createKernel()
-    const idx = Math.floor(Math.random()*data.length)
-    const item = data[idx]
+    const off = audios[2]
+    const sound = off.sounds[off.soundIdx]
+    off.soundIdx++
+    off.soundIdx %= off.sounds.length
 
-    const pan = Math.random()*2 - 1
-    const rate =  Math.random()*0.3+0.8
-    item.audio.pan(pan)
-    item.audio.rate(rate)
-    if(item.audio.isLoaded)
-      item.audio.play()
+    const pan = 0.2 * (Math.random() - 0.5)
+    const rate =  0.8 + Math.random()*0.2
+    //sound.pan(pan)
+    //sound.rate(rate)
+    if(sound.isLoaded)
+      sound.play()
+
     const msg = document.createElement('div')
     msg.className = 'item'
-    msg.textContent = '🍷🥃🍸🤤😵🤮'+'  '+item.phrase
+    msg.textContent = '🍷🥃🍸🤤😵🤮'
     emojis.appendChild(msg)
     setTimeout(()=> msg.remove(), 3000)
   }
@@ -151,19 +165,19 @@ const sketch = ( p ) => {
 
 const emojis = document.getElementById('emojis')
 const p = new p5(sketch,'hydra-ui')
-let data = null
 
-fetch('ofenses.csv')
-  .then(resp => resp.text())
-  .then(text => {
-    data = csvStringToArray(text)
-      .map( (v,i) => {
-        const phrase = v[0]
-        const country = v[1]
-        const path = '/audio/Def_INT-'+(''+(i+1)).padStart(3,'0')+'.mp3'
-        const audio = p.loadSound(path)
-        return {phrase,country,audio}
-      })
-  })
-
+const audios = [
+  { prefix: '/audio/Def_INT-', loadLeft: 85, offense: false},
+  { prefix: '/audio/e_Def_EN-', loadLeft: 84, offense: false},
+  { prefix: '/audio/Off_INT-', loadLeft: 82, offense: true},
+  { prefix: '/audio/p_Off_EN-', loadLeft: 84, offense: true},
+  { prefix: '/audio/x_Off_INT_2-', loadLeft: 56, offense: true},
+].map( a => {
+  a.sounds = new Array(a.loadLeft).fill(0)
+    .map((_,i) => a.prefix+(''+(i+1)).padStart(3,'0')+'.mp3')
+    .map(path => p.loadSound(path,() => a.loadLeft--))
+  a.sounds = shuffle(a.sounds)
+  a.soundIdx = 0
+  return a
+})
 
