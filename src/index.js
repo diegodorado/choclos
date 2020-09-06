@@ -110,7 +110,7 @@ const sketch = ( p ) => {
     })
     msg.appendChild(wmsg)
     emojis.appendChild(msg)
-    //setTimeout(()=> msg.remove(), 3000)
+    setTimeout(()=> msg.remove(), 3000)
 
     off.soundIdx++
     off.soundIdx %= off.sounds.length

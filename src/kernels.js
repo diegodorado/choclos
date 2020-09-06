@@ -127,7 +127,7 @@ class Kernel {
   }
 
   inside() {
-    var maxX = 300 
+    var maxX = 500 
     var maxY = 300 
     var maxZ = 300
     var steer = new p5.Vector(0,0,0);
