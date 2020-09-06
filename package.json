@@ -8,6 +8,7 @@
     "@babel/preset-es2015": "^7.0.0-beta.53",
     "babelify": "^10.0.0",
     "budo": "^11.6.4",
+    "cubic-spline": "^3.0.3",
     "hydra-synth": "^1.3.0",
     "p5": "0.9.0"
   }
