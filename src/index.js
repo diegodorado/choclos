@@ -4,41 +4,29 @@ import Spline from 'cubic-spline'
 import {kernels, createKernel} from './kernels'
 import hydra from './hydra'
 
+// EDIT HERE
+// set to true to show timeline curve
+const debugTimeline = false
+// set to 1.0 to animate at normal speed, 
+// and low values (like 0.001) to speed up simulation
+const timelineMult = 0.001
 
 // timeline ref points as [time,kernlesCount] pairs
 // other values will be interpolated from defined ones
+// time unit is minutes
 const points = [
   [0,0],
-  [10,1],
-  [20,2],
-  [100,500],
-]
+  [1*60,1],
+  [2*60,2],
+  [15*60,500],  // 15 hours
+].map(p => [p[0]*60*timelineMult, p[1]])
 const maxTimelineTime = points[points.length-1][0]
-// strech or compress timeline
-// total timeline duration would be maxTimelineTime*timelineMult seconds
-//const timelineMult = 60
-const timelineMult = 1
-const timeline = new Spline(points.map(p => p[0]*timelineMult),points.map(p =>p[1]))
-const debugTimeline = true
+
+const timeline = new Spline(points.map(p => p[0]),points.map(p =>p[1]))
 const debugResolution = 1024
 const debugCurve = Array(debugResolution).fill(0).map( (_,i) => i)
   .map(i => i/debugResolution*maxTimelineTime*timelineMult)
   .map(t => [t,timeline.at(t)])
-
-
-
-const csvStringToArray = strData =>
-{
-    const objPattern = new RegExp(("(\\,|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|([^\\,\\r\\n]*))"),"gi");
-    let arrMatches = null, arrData = [[]];
-    while (arrMatches = objPattern.exec(strData)){
-        if (arrMatches[1].length && arrMatches[1] !== ",")arrData.push([]);
-        arrData[arrData.length - 1].push(arrMatches[2] ?
-            arrMatches[2].replace(new RegExp( "\"\"", "g" ), "\"") :
-            arrMatches[3]);
-    }
-    return arrData;
-}
 
 const shuffle = (a) => {
     for (let i = a.length - 1; i > 0; i--) {
@@ -48,11 +36,7 @@ const shuffle = (a) => {
     return a;
 }
 
-
 const drawTimeline = (p,t) => {
-
-  if(!debugTimeline)
-    return
 
   p.stroke(255,0,255)
   p.fill(255,0,255)
@@ -87,17 +71,14 @@ const sketch = ( p ) => {
     if(audios.some(a => a.loadLeft > 0))
       return
 
-
     createKernel()
     const off = audios[2]
     const sound = off.sounds[off.soundIdx]
 
-//CHANGES HERE
     const pan = 0 + (Math.random(-1,1) * 0.3) //CLOSED PANNER // PAN -1/1 NOW +/- 0.3
     const rate =  0.9 + Math.random()*0.05 // CHANGE PLAYBACK RATE
     sound.pan(pan)
     sound.rate(rate)
-//END CHANGES
     if(sound.isLoaded)
       sound.play()
 
@@ -149,35 +130,22 @@ const sketch = ( p ) => {
     }
 
     p.background(0)
-//
-    //CHANGES HERE
-    // let dirY = (p.mouseY / p.height - 0.5) *2
-    // let dirX = (p.mouseX / p.width - 0.5) *2
-    p.ambientLight(250, 0, 0, 0) //frontal light
-    p.directionalLight(250, 255, 0, 50, -50, 125) //frontal light
-    p.directionalLight(250, 255, 0, -50, 150, -125) // backlight
-    p.directionalLight(255, 255, 255, -150, 150, -50) // top left light
-    p.directionalLight(250, 255, 0, 150, -150, -50) //bottom lught L
-    p.directionalLight(250, 255, 0, -150, -150, -50) //bottom lught R
+
+    p.ambientLight(100)
+    p.directionalLight(250, 255, 0, 50, -50, -125) //frontal light
     p.noStroke()
-    p.orbitControl()
     let fov = Math.PI/3
-    p.perspective(fov, p.width/p.height,0.1,p.height)
+    p.perspective(fov, p.width/p.height,0.1,2000)
 
+    p.ambientMaterial(255, 255, 0);
     // iterate through kernels, move them and display them
-    // p.normalMaterial();
-    // p.specularMaterial(255)
-    p.ambientMaterial(255, 255, 0); // ambv Material OK USE THIS TO AVOID CHROMA
-    // p.specularMaterial(255, 255, 0); // magenta material
-
-    //END CHANGES
-
     kernels.forEach( k => {
       k.update()
       k.render(p)
     })
 
-    drawTimeline(p,t)
+    if(debugTimeline)
+      drawTimeline(p,t)
 
   }
 }

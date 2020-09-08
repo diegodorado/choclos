@@ -52,5 +52,7 @@ body,html{
   0%   {opacity:1;transform: translateY(0vh) scale(0.6)}
   2%   {transform: translateY(-2vh) scale(1.2)}
   5%   {transform: translateY(-5vh) scale(1)}
+  70%   {opacity:1;}
+  80%   {opacity:0;}
   100% {opacity:0;transform:translateY(-100vh)}
 }

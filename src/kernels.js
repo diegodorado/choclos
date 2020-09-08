@@ -13,6 +13,7 @@ const random= (a,b) => {
 }
 
 class Kernel {
+
   constructor() {
     this.acceleration = new p5.Vector(0,0,0);
     this.velocity = new p5.Vector(random(-1,1),random(-1,1),random(-1,1));
@@ -22,7 +23,7 @@ class Kernel {
     this.maxforce = 0.01
 
   }
-//
+
   separate() {
     var desiredseparation = 80
     var steer = new p5.Vector(0,0,0);
@@ -145,11 +146,9 @@ class Kernel {
     p.translate(this.position)
     p.rotateX(p.acos(this.velocity.y/this.velocity.mag()));
     p.rotateZ(p.atan2(-this.velocity.x,this.velocity.z));
-    //CHANGES HERE
-    p.scale(0.75)
     p.torus(25,10)
-    p.sphere(30,255,255)
-    // CHANGES END
+    p.sphere(30)
     p.pop()
   }
+
 }

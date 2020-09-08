@@ -1,27 +1,56 @@
 import Hydra from 'hydra-synth'
 
-const hydra = new Hydra()
-// hydra sketch
-// src(s0)
-  // .out()
+// BEGIN MAGIA MIDI
+//defino mis variables
+let cc = Array(128).fill(0)
+let notes = Array(128).fill(0)
+let lastCc = -1
+let lastNote = -1
 //
+//declaro un handler de eventos midi
+const midiHandler = (e) => {
+  const m = e.data
+  const type = m[0] & 0xF0
+  const channel = m[0] & 0x0F
+
+  // filter by channel. 
+  // warning: it is 0-based
+  if(channel==0){
+
+    if(type===0x90){
+      //note on
+      lastNote = m[1]
+      console.log(lastNote/12)
+      notes[m[1]] = m[2]
+    }else if(type===0x80){
+      //note off
+    }else if(type===0xB0){
+      //control change
+      lastCc = m[1]
+      cc[m[1]] = m[2]
+    }
+
+  }
+
+}
 //
-//
-// // // s0.init({src: p.canvas})
-solid()
-.add(src(s0))
-// .add(src(s0).mult(noise(4).rotate(()=>time/32)),0.35)
-// // // .add(src(s0).mult(noise(4).rotate(()=>time/64)),0.25)
-// .modulate(noise(()=>a.fft[2]*3,0.02))
-// .modulate(noise(1,0.08),0.25)
-  // .modulate(shape(4,0.25,2))
-  // .scale([()=>a.fft[2]*4,0.8].smooth(0.99))
-// .scale([()=>a.fft[2]*4,0.8].smooth(0.99))
-  // .mult(osc(10, 0.1).modulate(noise(4)),0.25)
-// //   // .scale(1.2)
-  // .hue(2)
-  .mult(solid(),0.125)
-  .out(o3)
+// pido acceso a los dispositivos midi
+// y seteo el handler anterior a cada input midi
+navigator.requestMIDIAccess().then(ma => {
+   for (var input of ma.inputs.values())
+     input.onmidimessage = midiHandler
+})
+// END MAGIA MIDI
+
+const canvas = document.getElementById('hydra-canvas')
+canvas.style = `width:100%;height:100%`
+// changing resolution will affect kernel behaviours
+//canvas.width = 1920
+//canvas.height = 1080
+canvas.width = 1280
+canvas.height = 768
+const hydra = new Hydra({canvas})
+
 //
   //
   // GRID + Glitches
@@ -78,17 +107,12 @@ solid()
     .add(dist(),()=>a.fft[2],0.1)//CONTROL FEEDBACK
   	.modulate(dist(),1)//CONTROL FEEDBACK
   	.out(o2)
-//
+
 // MIX
-//
-  solid(1,1,1,1)
-  	.mult(src(o1))// GRID
-    .add(src(o2)) //LOGO
-  	.mult(src(o3).invert().thresh().luma()) // P5
-  	.add(src(o3)) // P5
-  	.out()
-//   //
-  render(o0)
+src(o1)// GRID
+  .add(src(o2)) //LOGO
+  .layer(src(s0).mask(src(s0).thresh(0.1))) // P5
+ 	.out()
 
 //give hydra back
 export default hydra
