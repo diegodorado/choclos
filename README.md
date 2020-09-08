@@ -4,8 +4,8 @@
 
 Clone repo and step into folder
 ```bash
-git clone https://github.com/diegodorado/choclos.git
-cd choclos
+git clone https://github.com/diegodorado/matz.git
+cd matz
 ```
 
 Install dependencies
