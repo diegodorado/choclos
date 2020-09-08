@@ -1,4 +1,4 @@
-# CHOCLOS
+# MATZ
 
 ## How to run
 
