@@ -22,7 +22,7 @@ class Kernel {
     this.maxforce = 0.01
 
   }
-
+//
   separate() {
     var desiredseparation = 80
     var steer = new p5.Vector(0,0,0);
@@ -71,7 +71,7 @@ class Kernel {
       steer.mult(this.maxspeed);
       steer.sub(this.velocity);
       steer.limit(this.maxforce);
-    } 
+    }
 
     return steer;
   }
@@ -98,7 +98,7 @@ class Kernel {
       // Steering = Desired minus Velocity
       steer = p5.Vector.sub(desired,this.velocity);
       steer.limit(this.maxforce);  // Limit to maximum steering force
-    } 
+    }
 
     return steer;
   }
@@ -127,8 +127,8 @@ class Kernel {
   }
 
   inside() {
-    var maxX = 500 
-    var maxY = 300 
+    var maxX = 500
+    var maxY = 300
     var maxZ = 300
     var steer = new p5.Vector(0,0,0);
     if (this.position.x < -maxX)  steer.x = 1
@@ -145,10 +145,11 @@ class Kernel {
     p.translate(this.position)
     p.rotateX(p.acos(this.velocity.y/this.velocity.mag()));
     p.rotateZ(p.atan2(-this.velocity.x,this.velocity.z));
-    p.scale(0.25)
-    p.torus(100,40)
-    p.sphere(120)
+    //CHANGES HERE
+    p.scale(0.75)
+    p.torus(25,10)
+    p.sphere(30,255,255)
+    // CHANGES END
     p.pop()
   }
 }
-

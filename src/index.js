@@ -87,14 +87,17 @@ const sketch = ( p ) => {
     if(audios.some(a => a.loadLeft > 0))
       return
 
+
     createKernel()
     const off = audios[2]
     const sound = off.sounds[off.soundIdx]
 
-    const pan = 0.2 * (Math.random() - 0.5)
-    const rate =  0.8 + Math.random()*0.2
-    //sound.pan(pan)
-    //sound.rate(rate)
+//CHANGES HERE
+    const pan = 0 + (Math.random(-1,1) * 0.3) //CLOSED PANNER // PAN -1/1 NOW +/- 0.3
+    const rate =  0.9 + Math.random()*0.05 // CHANGE PLAYBACK RATE
+    sound.pan(pan)
+    sound.rate(rate)
+//END CHANGES
     if(sound.isLoaded)
       sound.play()
 
@@ -116,8 +119,8 @@ const sketch = ( p ) => {
     off.soundIdx %= off.sounds.length
   }
 
-  p.setup = () => { 
-    p.createCanvas(hydra.width,hydra.height, p.WEBGL) 
+  p.setup = () => {
+    p.createCanvas(hydra.width,hydra.height, p.WEBGL)
 
     p.canvas.style.position = "absolute"
     p.canvas.style.top = "0px"
@@ -146,19 +149,28 @@ const sketch = ( p ) => {
     }
 
     p.background(0)
-
-    let dirY = (p.mouseY / p.height - 0.5) *2
-    let dirX = (p.mouseX / p.width - 0.5) *2
-    p.directionalLight(250, 255, 0, dirX, -dirY, -125)
-    p.ambientMaterial(1200)
+//
+    //CHANGES HERE
+    // let dirY = (p.mouseY / p.height - 0.5) *2
+    // let dirX = (p.mouseX / p.width - 0.5) *2
+    p.ambientLight(250, 0, 0, 0) //frontal light
+    p.directionalLight(250, 255, 0, 50, -50, 125) //frontal light
+    p.directionalLight(250, 255, 0, -50, 150, -125) // backlight
+    p.directionalLight(255, 255, 255, -150, 150, -50) // top left light
+    p.directionalLight(250, 255, 0, 150, -150, -50) //bottom lught L
+    p.directionalLight(250, 255, 0, -150, -150, -50) //bottom lught R
     p.noStroke()
     p.orbitControl()
     let fov = Math.PI/3
     p.perspective(fov, p.width/p.height,0.1,p.height)
 
     // iterate through kernels, move them and display them
-    p.normalMaterial();
-    p.specularMaterial(20)
+    // p.normalMaterial();
+    // p.specularMaterial(255)
+    p.ambientMaterial(255, 255, 0); // ambv Material OK USE THIS TO AVOID CHROMA
+    // p.specularMaterial(255, 255, 0); // magenta material
+
+    //END CHANGES
 
     kernels.forEach( k => {
       k.update()
@@ -214,4 +226,3 @@ const emojiMsgs = [
   '👨‍🔬,⬆︎,🥜,🍕,🍗,☔️,💀,🤮',
   '👨‍🔬,⬆︎,🦐,📣,🔔,😡,☠️',
 ]
-
