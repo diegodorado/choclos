@@ -2,7 +2,7 @@ import p5 from 'p5'
 
 export const kernels = []
 
-export const createKernel = () => {
+export const createKernel = (x) => {
   const k = new Kernel()
   kernels.push(k)
   return k
@@ -19,9 +19,9 @@ class Kernel {
     this.velocity = new p5.Vector(random(-1,1),random(-1,1),random(-1,1));
     this.position = new p5.Vector(random(-100,100),random(-100,100),random(-100,100));
     this.r = 10
-    this.maxspeed = 3
-    this.maxforce = 0.01
-
+    this.maxspeed = 5
+    this.maxforce = 0.05
+    this.active = true
   }
 
   separate() {
@@ -29,7 +29,7 @@ class Kernel {
     var steer = new p5.Vector(0,0,0);
     var count = 0;
     // For every boid in the system, check if it's too close
-    kernels.filter(k=>k!==this).forEach( k => {
+    kernels.filter(k=>k!==this && !this.active).forEach( k => {
       var d = p5.Vector.dist(this.position,k.position);
       // If the distance is less than an arbitrary amount
       if (d < desiredseparation) {
@@ -59,7 +59,7 @@ class Kernel {
     var neighbordist = 200
     var steer = new p5.Vector(0,0,0);
     var count = 0;
-    kernels.filter(k=>k!==this).forEach( k => {
+    kernels.filter(k=>k!==this && !this.active).forEach( k => {
       var d = p5.Vector.dist(this.position,k.position);
       if ((d > 0) && (d < neighbordist)) {
         steer.add(k.velocity);
@@ -81,7 +81,7 @@ class Kernel {
     var neighbordist = 200
     var steer = new p5.Vector(0,0,0);
     var count = 0;
-    kernels.filter(k=>k!==this).forEach( k => {
+    kernels.filter(k=>k!==this && !this.active).forEach( k => {
       var d = p5.Vector.dist(this.position,k.position);
       if ((d > 0) && (d < neighbordist)) {
         steer.add(k.position);
@@ -105,20 +105,21 @@ class Kernel {
   }
 
   update() {
+
+    if(!this.active)
+      return
+
     var sep = this.separate()
     var ali = this.align()
     var coh = this.cohesion()
-    var ins = this.inside()
-    sep.mult(10)
+    sep.mult(20)
     ali.mult(1)
     coh.mult(1)
-    ins.mult(10)
 
     this.acceleration.mult(0);
     this.acceleration.add(sep);
     this.acceleration.add(ali);
     this.acceleration.add(coh);
-    this.acceleration.add(ins);
 
     // Update velocity
     this.velocity.add(this.acceleration);
@@ -127,21 +128,26 @@ class Kernel {
 
   }
 
-  inside() {
-    var maxX = 500
-    var maxY = 300
-    var maxZ = 300
-    var steer = new p5.Vector(0,0,0);
-    if (this.position.x < -maxX)  steer.x = 1
-    if (this.position.x >  maxX)  steer.x = -1
-    if (this.position.y < -maxY)  steer.y = 1
-    if (this.position.y >  maxY)  steer.y = -1
-    if (this.position.z < -maxZ)  steer.z = 1
-    if (this.position.z >  maxZ)  steer.z = -1
-    return steer;
+  checkBoundaries(p) {
+    var maxX = p.width/2
+    var maxY = p.height/2
+    var maxZ = 200
+    if (
+      (this.position.x < -maxX)
+      || (this.position.x >  maxX)
+      || (this.position.y < -maxY)
+      || (this.position.y >  maxY)
+    )
+      this.active = false
   }
 
   render(p) {
+
+    if(!this.active)
+      return
+
+    this.checkBoundaries(p)
+
     p.push()
     p.translate(this.position)
     p.rotateX(p.acos(this.velocity.y/this.velocity.mag()));

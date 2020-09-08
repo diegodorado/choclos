@@ -9,7 +9,9 @@ import hydra from './hydra'
 const debugTimeline = false
 // set to 1.0 to animate at normal speed, 
 // and low values (like 0.001) to speed up simulation
-const timelineMult = 0.001
+const timelineMult = 0.005
+//how often to check if a kernel has to be spwaned
+const kernelsCheckInterval = 1*timelineMult
 
 // timeline ref points as [time,kernlesCount] pairs
 // other values will be interpolated from defined ones
@@ -25,7 +27,7 @@ const maxTimelineTime = points[points.length-1][0]
 const timeline = new Spline(points.map(p => p[0]),points.map(p =>p[1]))
 const debugResolution = 1024
 const debugCurve = Array(debugResolution).fill(0).map( (_,i) => i)
-  .map(i => i/debugResolution*maxTimelineTime*timelineMult)
+  .map(i => i/debugResolution*maxTimelineTime)
   .map(t => [t,timeline.at(t)])
 
 const shuffle = (a) => {
@@ -71,23 +73,32 @@ const sketch = ( p ) => {
     if(audios.some(a => a.loadLeft > 0))
       return
 
-    createKernel()
-    const off = audios[2]
-    const sound = off.sounds[off.soundIdx]
+    const k = createKernel()
+    const set = audios[audio.shouldOffend ? 2 : 0]
+    const sound = set.sounds[set.soundIdx]
+    set.soundIdx++
+    set.soundIdx %= set.sounds.length
+    // toggle offense/defense for next kernel
+    audio.shouldOffend = !audio.shouldOffend
 
-    const pan = 0 + (Math.random(-1,1) * 0.3) //CLOSED PANNER // PAN -1/1 NOW +/- 0.3
-    const rate =  0.9 + Math.random()*0.05 // CHANGE PLAYBACK RATE
-    sound.pan(pan)
-    sound.rate(rate)
-    if(sound.isLoaded)
+    if(audio.voices < audio.maxVoices){
+      const pan = 0 + (Math.random(-1,1) * 0.3) //CLOSED PANNER // PAN -1/1 NOW +/- 0.3
+      const rate =  0.9 + Math.random()*0.05 // CHANGE PLAYBACK RATE
+      sound.pan(pan)
+      sound.rate(rate)
       sound.play()
+      audio.voices++
+    }
 
     const msg = document.createElement('div')
     msg.className = 'item'
-    msg.style = `transform:translateX(${Math.round(Math.random()*90)}vw)`
+    const x =Math.random()
+    k.position.x = (x-0.5) * p.width * 0.9
+    k.position.z = 0
+    msg.style = `transform:translateX(${Math.round(x*90)}vw)`
     const wmsg = document.createElement('div')
     wmsg.className = 'wrapper'
-    emojiMsgs[off.soundIdx % emojiMsgs.length].split(',').forEach( e => {
+    emojiMsgs[set.soundIdx % emojiMsgs.length].split(',').forEach( e => {
       const span = document.createElement('span')
       span.textContent = e
       wmsg.appendChild(span)
@@ -96,8 +107,6 @@ const sketch = ( p ) => {
     emojis.appendChild(msg)
     setTimeout(()=> msg.remove(), 3000)
 
-    off.soundIdx++
-    off.soundIdx %= off.sounds.length
   }
 
   p.setup = () => {
@@ -117,15 +126,16 @@ const sketch = ( p ) => {
   }
 
   let lastKernelsCheck = 0
-  const kernelsCheckInterval = 1
 
   p.draw = () => {
     let t = p.millis()/1000
 
     if(t-lastKernelsCheck> kernelsCheckInterval) {
-      const c = Math.round(timeline.at(t))
-      if (kernels.length < c)
+      const v = timeline.at(t) || timeline.at(maxTimelineTime)
+      const c = Math.round(v)
+      if (kernels.length < c){
         addKernel()
+      }
       lastKernelsCheck = t
     }
 
@@ -154,6 +164,11 @@ const sketch = ( p ) => {
 
 const emojis = document.getElementById('emojis')
 const p = new p5(sketch,'hydra-ui')
+const audio = {
+  maxVoices: 10,
+  voices: 0,
+  shouldOffend: true,
+}
 
 const audios = [
   { prefix: '/audio/Def_INT-', loadLeft: 85, offense: false},
@@ -166,6 +181,7 @@ const audios = [
     .map((_,i) => a.prefix+(''+(i+1)).padStart(3,'0')+'.mp3')
     .map(path => p.loadSound(path,() => a.loadLeft--))
   a.sounds = shuffle(a.sounds)
+  a.sounds.forEach(s => s.onended( () => audio.voices--) )
   a.soundIdx = 0
   return a
 })
